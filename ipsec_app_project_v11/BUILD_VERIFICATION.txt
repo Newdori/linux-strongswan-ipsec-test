@@ -1,0 +1,121 @@
+ipsec_app_project_v11 verification
+================================
+
+Verification environment
+------------------------
+The source was compiled and unit/harness checked in the artifact build environment.
+This environment does not contain the user's real PC-A/PC-B strongSwan daemons, so the
+final two-host IKE/ESP validation must be run on the user's 5.9.13 / 5.8.4 systems.
+
+1. Strict build
+---------------
+Command:
+
+  make clean
+  make -j2
+
+Flags from Makefile:
+
+  -O2 -g -std=c11 -Wall -Wextra -Wpedantic -Werror
+
+Result: PASS
+
+All source modules compiled with -Werror and linked successfully.
+
+2. Matrix parser
+----------------
+The supplied configs/crypto_matrix.conf was loaded through test_matrix_load().
+
+Observed:
+
+  total=59 enabled=54 disabled=5
+
+Expected:
+
+  total=59 enabled=54 disabled=5
+
+Result: PASS
+
+v11 source review also confirms that an explicit --case selection is evaluated before
+the enabled flag, so enabled=false is overridden only for the explicitly named case.
+Normal matrix execution still skips all disabled cases.
+
+3. reqid-scoped XFRM counter parser
+-----------------------------------
+The parser was tested against the real v10 ESP-ESN xfrm_state_after.txt sample.
+That file contains two reqid=1 ESP states with:
+
+  outbound: 23 packets / 5340 bytes
+  inbound : 23 packets /  567 bytes
+
+Expected reqid=1 aggregate:
+
+  46 packets / 5907 bytes
+
+Observed:
+
+  scoped=1 reqid=1 packets=46 bytes=5907 errors=0
+
+Result: PASS
+
+A non-existent reqid=999 was also tested:
+
+  scoped=1 reqid=999 packets=0 bytes=0 errors=0
+
+Result: PASS
+
+This verifies that v11 does not accidentally sum unrelated XFRM state blocks when a
+target CHILD reqid is available.
+
+4. Capture measurement-window parser
+------------------------------------
+A mock tcpdump decoder was used with ESP packets before, inside, and after a configured
+measurement interval.
+
+Observed:
+
+  measurement_total_esp_packets=2
+  measurement_window_known=yes
+  outbound_esp_packets=2
+  plaintext_udp_packets=0
+  kernel_drop=0
+
+Result: PASS
+
+Only ESP timestamps inside the measurement interval were counted.
+
+5. v10-result-driven changes present
+-------------------------------------
+PASS: capture is started and readiness-confirmed before the XFRM baseline.
+PASS: matrix peers synchronize at CAPTURE_STAGE_READY before the XFRM baseline.
+PASS: initiator measurement_guard_ms is local-only and occurs after its baseline.
+PASS: XFRM packet/byte counters are scoped to the observed CHILD reqid when available.
+PASS: capture measurement start/end timestamps are recorded around the data window.
+PASS: matrix CSV contains capture_measurement_esp_packets and capture_xfrm_count_match.
+PASS: non-PFS child_ke is reported as N/A.
+PASS: the four PFS cases retain separate CREATE_CHILD_SA + expected CHILD KE verification.
+PASS: tcpdump --immediate-mode, -B 4096, -U, IN/OUT capture, and kernel-drop parsing remain.
+PASS: target-SA cleanup remains reqid-verified; no whole-XFRM flush command is introduced.
+PASS: explicit --case may execute an enabled=false optional/negative/legacy case.
+
+6. Real-host validation still required
+--------------------------------------
+Recommended initial v11 cases on both real PCs:
+
+  BASE-001
+  ESP-GCM-256-16
+  ESP-PFS-ECP384
+  IKE-CBC-128
+
+For these cases verify matrix_summary.csv contains, where applicable:
+
+  xfrm_counter_scope=reqid
+  child_ke=N/A              (non-PFS)
+  child_ke=PASS             (PFS)
+  capture_kernel_drops=0
+  capture_xfrm_count_match=PASS  (preferred diagnostic result)
+
+Then run all 54 enabled positive cases.
+
+Optional enabled=false cases can be executed directly in v11 with --case without editing
+the matrix, for example NEG-IKE-NO-MATCH or MODE-TUNNEL.

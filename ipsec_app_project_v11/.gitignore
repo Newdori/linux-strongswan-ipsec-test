@@ -1,0 +1,218 @@
+# =============================================================================
+
+# strongSwan IKEv2/IPsec Test Application
+
+# .gitignore
+
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+
+# Build outputs
+
+# -----------------------------------------------------------------------------
+
+# Application binary
+
+ipsec_app
+
+# C/C++ build artifacts
+
+*.o
+*.obj
+*.a
+*.so
+*.so.*
+*.d
+*.lo
+*.la
+
+# Debug / profiling / coverage
+
+*.gcno
+*.gcda
+*.gcov
+*.prof
+*.profraw
+*.profdata
+
+# Core dumps
+
+core
+core.*
+*.core
+
+# -----------------------------------------------------------------------------
+
+# Sensitive files
+
+# -----------------------------------------------------------------------------
+
+# IPsec PSK files
+
+ipsec_test.psk
+*.psk
+
+# Private keys / certificates that must not be committed accidentally
+
+*.key
+*.p12
+*.pfx
+
+# Environment / local secret files
+
+.env
+.env.*
+*.secret
+*.secrets
+
+# Local machine-specific configuration
+
+configs/*.local.conf
+configs/local_*.conf
+
+# -----------------------------------------------------------------------------
+
+# Test results
+
+# -----------------------------------------------------------------------------
+
+# Application result directory
+
+results/
+result/
+
+# Matrix test output directories
+
+ipsec_matrix_*/
+ipsec_test_*/
+
+# Packet captures
+
+*.pcap
+*.pcapng
+*.cap
+
+# Runtime / test logs
+
+*.log
+*.trace
+
+# Generated reports
+
+matrix_summary.csv
+
+# -----------------------------------------------------------------------------
+
+# Temporary strongSwan configuration
+
+# -----------------------------------------------------------------------------
+
+ipsec-app-*-conns.conf
+ipsec-app-*-creds.conf
+ipsec-app-*.conf
+
+# Temporary files
+
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+.#*
+
+# -----------------------------------------------------------------------------
+
+# Generated archives / release packages
+
+# -----------------------------------------------------------------------------
+
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+
+# -----------------------------------------------------------------------------
+
+# IDE / editor
+
+# -----------------------------------------------------------------------------
+
+# Visual Studio Code
+
+.vscode/
+
+# JetBrains
+
+.idea/
+*.iml
+
+# Vim
+
+*.swp
+*.swo
+*.swn
+
+# Emacs
+
+*~
+#*#
+
+# -----------------------------------------------------------------------------
+
+# Development tools
+
+# -----------------------------------------------------------------------------
+
+# clangd / compilation database
+
+.cache/
+.clangd/
+compile_commands.json
+
+# ctags / cscope
+
+tags
+TAGS
+cscope.out
+cscope.files
+cscope.in.out
+cscope.po.out
+
+# GDB
+
+.gdb_history
+
+# -----------------------------------------------------------------------------
+
+# OS generated files
+
+# -----------------------------------------------------------------------------
+
+# Linux
+
+.directory
+
+# macOS
+
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+
+Thumbs.db
+Thumbs.db:encryptable
+Desktop.ini
+
+# -----------------------------------------------------------------------------
+
+# Local backup files
+
+# -----------------------------------------------------------------------------
+
+*.bak
+*.backup
+*.orig
+*.rej
+
