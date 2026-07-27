@@ -1,0 +1,12 @@
+category,strongswan_5.8.4_count,strongswan_5.9.13_count,common_count,only_5.8.4_count,only_5.9.13_count,compatibility_note
+encryption,10,15,10,0,5,5.8.4 names are subset of 5.9.13
+integrity,14,15,14,0,1,5.8.4 names are subset of 5.9.13
+aead,4,10,4,0,6,5.8.4 names are subset of 5.9.13
+hasher,12,12,12,0,0,5.8.4 names are subset of 5.9.13
+prf,10,10,10,0,0,5.8.4 names are subset of 5.9.13
+xof,7,8,7,0,1,5.8.4 names are subset of 5.9.13
+drbg,7,7,7,0,0,5.8.4 names are subset of 5.9.13
+dh,23,27,23,0,4,5.8.4 names are subset of 5.9.13
+rng,3,3,3,0,0,5.8.4 names are subset of 5.9.13
+nonce-gen,1,1,1,0,0,5.8.4 names are subset of 5.9.13
+kdf,0,2,0,0,2,5.8.4 names are subset of 5.9.13

@@ -1,0 +1,8 @@
+Target repository path requested by the user:
+C:\Users\NETCUS\Desktop\git\linux-strongswan-ipsec-test
+
+Create/extract this project as:
+C:\Users\NETCUS\Desktop\git\linux-strongswan-ipsec-test\ipsec_app_project_v12
+
+This ChatGPT execution environment cannot directly write to the user's Windows C: drive.
+The delivered ZIP contains the ipsec_app_project_v12 folder to place at that location.
