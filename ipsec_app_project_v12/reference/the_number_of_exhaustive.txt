@@ -1,0 +1,36 @@
+Exhaustive
+│
+├─ IKE = 18,172
+│   │
+│   ├─ Classic
+│   │   12 Encryption
+│   │   × 9 Integrity
+│   │   × 7 PRF
+│   │   × 22 KE
+│   │   = 16,632
+│   │
+│   └─ AEAD
+│       10 AEAD
+│       × 7 PRF
+│       × 22 KE
+│       = 1,540
+│
+└─ ESP = 4,876
+    │
+    ├─ Classic
+    │   12 Encryption
+    │   × 8 Integrity
+    │   × 23 PFS
+    │   × 2 ESN
+    │   = 4,416
+    │
+    └─ AEAD
+        10 AEAD
+        × 23 PFS
+        × 2 ESN
+        = 460
+
+
+최종
+18,172 × 4,876
+= 88,606,672 CASE
