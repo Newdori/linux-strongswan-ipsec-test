@@ -1,0 +1,120 @@
+# ipsec_app_project_v12 build and static verification
+
+Date: 2026-07-27
+Base version: ipsec_app_project_v11
+
+## Strict build
+
+Command:
+  make clean && make
+
+Flags from Makefile:
+  -O2 -g -std=c11 -Wall -Wextra -Wpedantic -Werror
+
+Result: PASS
+
+## v12 mode count verification
+
+baseline:
+  enabled cases = 54
+
+cross:
+  unique verified IKE proposals = 30
+  unique verified ESP proposals = 20
+  generated pairs = 600
+
+exhaustive (strongSwan 5.8.4 proposal catalog):
+  generated IKE proposals = 18172
+  generated ESP proposals = 4876
+  generated IKE x ESP pairs = 88606672
+
+custom direct:
+  one exact IKE/ESP pair = PASS (CLI/count validation)
+
+custom matrix example:
+  enabled cases = 2
+
+## Exhaustive generator uniqueness
+
+IKE generated = 18172
+IKE unique    = 18172
+ESP generated = 4876
+ESP unique    = 4876
+
+Result: PASS (no duplicate IKE or ESP proposal strings in the generated catalogs)
+
+## Safety behavior
+
+- exhaustive mode without --limit refuses to run unless --allow-full-exhaustive is explicitly specified.
+- --start is 1-based and may be combined with --limit for deterministic batches.
+- cross/exhaustive cases use deterministic IDs so both peers can synchronize using the same start/limit range.
+- generated PFS ESP proposals use separate CREATE_CHILD_SA and expected CHILD KE verification.
+- no global XFRM flush was added.
+
+## Reference CSV validation
+
+The following CSV files parse with a consistent column count:
+  reference/01_algorithm_category_summary_5.8.4_vs_5.9.13.csv
+  reference/02_encryption_algorithms_5.8.4_vs_5.9.13.csv
+  reference/03_exhaustive_5.8.4_proposal_catalog.csv
+  reference/04_exhaustive_excluded_loaded_primitives_5.8.4.csv
+  reference/05_cross_verified_proposals.csv
+
+## Runtime limitation
+
+The container used to build v12 does not contain the user's real strongSwan 5.9.13 / 5.8.4 two-PC environment. Therefore the new cross/exhaustive/custom generated modes require final runtime validation on PC-A/PC-B. The baseline data path itself is inherited from the real-PC validated v11 implementation.
+rm -f src/capture.o src/config.o src/firewall.o src/logger.o src/main.o src/network.o src/process.o src/report.o src/strongswan.o src/test_catalog.o src/test_matrix.o src/udp_test.o src/xfrm.o ipsec_app
+cc -Iinclude -O2 -g -std=c11 -Wall -Wextra -Wpedantic -Werror -c src/capture.c -o src/capture.o
+cc -Iinclude -O2 -g -std=c11 -Wall -Wextra -Wpedantic -Werror -c src/config.c -o src/config.o
+cc -Iinclude -O2 -g -std=c11 -Wall -Wextra -Wpedantic -Werror -c src/firewall.c -o src/firewall.o
+cc -Iinclude -O2 -g -std=c11 -Wall -Wextra -Wpedantic -Werror -c src/logger.c -o src/logger.o
+cc -Iinclude -O2 -g -std=c11 -Wall -Wextra -Wpedantic -Werror -c src/main.c -o src/main.o
+cc -Iinclude -O2 -g -std=c11 -Wall -Wextra -Wpedantic -Werror -c src/network.c -o src/network.o
+cc -Iinclude -O2 -g -std=c11 -Wall -Wextra -Wpedantic -Werror -c src/process.c -o src/process.o
+cc -Iinclude -O2 -g -std=c11 -Wall -Wextra -Wpedantic -Werror -c src/report.c -o src/report.o
+cc -Iinclude -O2 -g -std=c11 -Wall -Wextra -Wpedantic -Werror -c src/strongswan.c -o src/strongswan.o
+cc -Iinclude -O2 -g -std=c11 -Wall -Wextra -Wpedantic -Werror -c src/test_catalog.c -o src/test_catalog.o
+cc -Iinclude -O2 -g -std=c11 -Wall -Wextra -Wpedantic -Werror -c src/test_matrix.c -o src/test_matrix.o
+cc -Iinclude -O2 -g -std=c11 -Wall -Wextra -Wpedantic -Werror -c src/udp_test.c -o src/udp_test.o
+cc -Iinclude -O2 -g -std=c11 -Wall -Wextra -Wpedantic -Werror -c src/xfrm.c -o src/xfrm.o
+cc src/capture.o src/config.o src/firewall.o src/logger.o src/main.o src/network.o src/process.o src/report.o src/strongswan.o src/test_catalog.o src/test_matrix.o src/udp_test.o src/xfrm.o  -o ipsec_app
+
+--- CLI TEST OUTPUT ---
+=== HELP ===
+Usage:
+  sudo ./ipsec_app --config FILE
+  sudo ./ipsec_app --config FILE --mode baseline [--matrix MATRIX.conf] [--case CASE_ID]
+  sudo ./ipsec_app --config FILE --mode cross [--matrix MATRIX.conf] [--start N] [--limit N]
+  sudo ./ipsec_app --config FILE --mode exhaustive [--start N] --limit N
+  sudo ./ipsec_app --config FILE --mode exhaustive --allow-full-exhaustive
+  sudo ./ipsec_app --config FILE --mode custom --ike PROPOSAL --esp PROPOSAL [--custom-id ID] [--child-ke TOKEN]
+  sudo ./ipsec_app --config FILE --mode custom --matrix CUSTOM.conf [--case CASE_ID]
+  sudo ./ipsec_app --config FILE --mode MODE --count-only
+  sudo ./ipsec_app --check --config FILE [--mode MODE] [--matrix MATRIX.conf]
+  sudo ./ipsec_app --cleanup --config FILE
+  ./ipsec_app --generate-psk FILE
+
+Modes:
+  baseline   Existing enabled 54-case matrix (v11 compatible)
+  cross      Cartesian product of verified unique IKE x ESP proposals
+  exhaustive 5.8.4 proposal-valid complete IKE x ESP catalog
+  custom     User-selected exact pair or user-provided matrix file
+=== COUNTS ===
+mode=baseline cases=54
+mode=cross verified_ike=30 verified_esp=20 cases=600
+mode=exhaustive base=strongSwan-5.8.4 ike_proposals=18172 esp_proposals=4876 cases=88606672
+mode=custom source=direct cases=1
+=== CUSTOM MATRIX COUNT ===
+mode=custom source=matrix cases=2
+
+run_test.sh wrapper verification:
+- bash -n: PASS
+- baseline command mapping (mock application): PASS
+- cross START/LIMIT command mapping (mock application): PASS
+- exhaustive START/LIMIT command mapping (mock application): PASS
+- direct custom command mapping including CHILD_KE (mock application): PASS
+- custom-matrix command mapping (mock application): PASS
+- actual strongSwan runtime was not invoked for wrapper verification.
+- wrapper count baseline using built v12 binary: PASS (54)
+- wrapper count cross using built v12 binary: PASS (600)
+- wrapper count exhaustive using built v12 binary: PASS (88,606,672)

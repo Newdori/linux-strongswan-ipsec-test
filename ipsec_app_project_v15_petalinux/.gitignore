@@ -1,0 +1,53 @@
+# Build outputs
+ipsec_app
+*.o
+*.d
+*.a
+*.so
+*.so.*
+
+# Secrets / credentials
+ipsec_test.psk
+*.psk
+*.key
+*.p12
+*.pfx
+.env
+.env.*
+
+# Runtime/test outputs
+results/
+ipsec_matrix_*/
+ipsec_baseline_*/
+ipsec_cross_*/
+ipsec_exhaustive_*/
+ipsec_exhaustive-ike_*/
+ipsec_exhaustive-esp_*/
+ipsec_custom_*/
+*.pcap
+*.pcapng
+*.log
+
+# Temporary / editor
+*.tmp
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Archives
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+
+# Additional private credential/key material
+*.pk8
+*.p8
+*.jks
+*.keystore
+secrets/
+private/
+certs/private/
+credentials/

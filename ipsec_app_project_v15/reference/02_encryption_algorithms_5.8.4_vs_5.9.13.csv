@@ -1,0 +1,16 @@
+algorithm,5.8.4_present,5.8.4_provider,5.9.13_present,5.9.13_provider,status
+AES_CBC,yes,aes,yes,aesni,common
+AES_ECB,yes,aes,yes,aesni,common
+3DES_CBC,yes,des,yes,openssl,common
+DES_CBC,yes,des,yes,openssl,common
+DES_ECB,yes,des,yes,openssl,common
+RC2_CBC,yes,rc2,yes,rc2,common
+CAMELLIA_CBC,yes,openssl,yes,openssl,common
+CAST_CBC,yes,openssl,yes,openssl,common
+BLOWFISH_CBC,yes,openssl,yes,openssl,common
+NULL,yes,openssl,yes,openssl,common
+AES_CTR,no,,yes,aesni,5.9.13_only
+AES_CFB,no,,yes,openssl,5.9.13_only
+CAMELLIA_CTR,no,,yes,openssl,5.9.13_only
+SERPENT_CBC,no,,yes,gcrypt,5.9.13_only
+TWOFISH_CBC,no,,yes,gcrypt,5.9.13_only

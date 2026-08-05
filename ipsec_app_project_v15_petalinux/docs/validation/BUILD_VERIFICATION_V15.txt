@@ -1,0 +1,81 @@
+ipsec_app_project_v15 build/static verification
+================================================
+
+Basis
+-----
+- v15 is derived from v14.
+- No proposal-generation or IPsec data-path redesign was made.
+- Changes target capture statistics correctness, result classification, and capture-buffer sizing.
+
+Compiler policy
+---------------
+-std=c11 -Wall -Wextra -Wpedantic -Werror
+
+Build
+-----
+PASS
+
+Mode count regression
+---------------------
+baseline       = 54
+cross          = 600
+exhaustive-ike = 18,172
+exhaustive-esp = 4,876
+exhaustive     = 88,606,672
+
+run_test.sh syntax
+------------------
+bash -n run_test.sh: PASS
+
+XFRM cleanup safety
+-------------------
+Executable source/config scan found no:
+  ip xfrm state flush
+  ip xfrm policy flush
+PASS
+
+Public repository result-output protection
+------------------------------------------
+.gitignore explicitly excludes:
+  ipsec_exhaustive-ike_*/
+  ipsec_exhaustive-esp_*/
+PASS (static rule verification)
+
+Capture statistics parser regression
+------------------------------------
+Production parser tested with both plural and singular tcpdump fixtures:
+  42 packets captured / 3 packets dropped by kernel
+  1 packet captured / 1 packet dropped by kernel
+PASS
+
+Production parser also tested against two actual v14 responder tcpdump_stderr files that contain:
+  1 packet dropped by kernel
+Both were parsed as:
+  stats_known=yes
+  packets_dropped_by_kernel=1
+  lossless=no
+PASS
+
+v15 result model
+----------------
+- functional_result added.
+- capture_quality_result added.
+- strict_result added.
+- Existing overall/TESTCASE RESULT remains the functional result for backward compatibility.
+- Positive strict PASS requires functional PASS, capture-quality PASS, valid measurement window,
+  reqid-scoped XFRM/PCAP comparability, and exact packet-count match.
+
+Capture buffer
+--------------
+Default: 16,384 KiB
+PC-A sample config: 16,384 KiB
+PC-B sample config: 16,384 KiB
+Allowed configured range remains 64..65,536 KiB.
+
+Field-validation status
+-----------------------
+Implementation/static verification: COMPLETE
+Real PC-A/PC-B v15 regression: NOT YET PERFORMED
+
+The 16 MiB buffer is therefore a mitigation to be verified on hardware; this document does not claim
+that responder tcpdump kernel drops are eliminated until a v15 field re-test confirms it.

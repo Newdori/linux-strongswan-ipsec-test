@@ -1,0 +1,28 @@
+PetaLinux port verification
+===========================
+
+Host syntax/build verification command:
+  make clean && make
+
+Compiler flags:
+  -O2 -g -std=c11 -Wall -Wextra -Wpedantic -Werror
+
+Result:
+  PASS: all sources compiled and linked without warnings/errors.
+
+Runtime command-presence guard verification:
+  PATH with temporary ipsec/swanctl stubs
+  ./ipsec_app --config configs/pc_a_initiator.conf --mode baseline --check
+
+Result:
+  PASS: no systemctl requirement; baseline configuration check completed.
+
+Runtime-source scan:
+  grep systemctl/charon-systemd in src/, include/, run_test.sh
+
+Result:
+  PASS: no runtime references remain.
+
+Note:
+  The generated host binary was only used for build verification and is not
+  included in the source archive. Rebuild with the PetaLinux AArch64 SDK.

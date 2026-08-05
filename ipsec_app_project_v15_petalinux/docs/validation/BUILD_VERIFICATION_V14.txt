@@ -1,0 +1,271 @@
+# ipsec_app_project_v14 build and static verification
+
+Date: 2026-07-27
+Base version: ipsec_app_project_v13
+
+Status terminology:
+- IMPLEMENTED / STATIC VERIFIED: verified in the build container without the user's real two-PC strongSwan environment.
+- REAL-EQUIPMENT VERIFIED: requires execution on PC-A/PC-B. The new v14 split exhaustive modes were not run on those hosts in this verification session.
+
+## 1. v14 implementation scope
+
+Added two generated modes without removing or redesigning existing modes:
+
+  exhaustive-ike
+    generated dimension: complete 5.8.4 IKE proposal catalog
+    fixed dimension:     config esp_proposals
+    current cases:       18,172
+
+  exhaustive-esp
+    fixed dimension:     config ike_proposals
+    generated dimension: complete 5.8.4 ESP proposal catalog
+    current cases:       4,876
+
+Existing modes retained:
+  baseline
+  cross
+  exhaustive
+  custom
+
+The complete exhaustive Cartesian product remains 88,606,672 cases.
+
+## 2. Strict C11 build
+
+Command:
+  make clean && make
+
+Flags from Makefile:
+  -O2 -g -std=c11 -Wall -Wextra -Wpedantic -Werror
+
+Result:
+  PASS
+
+All project C translation units compiled and linked without warnings promoted to errors.
+
+## 3. v13 regression-preservation comparison
+
+26 runtime source/config files not intentionally modified for v14 were compared byte-for-byte against the supplied v13 tree.
+
+Result:
+  26 / 26 byte-identical: PASS
+
+Intentional runtime-side changes:
+  src/main.c
+    adds mode enum/CLI parsing/getters/count/check/run routing for exhaustive-ike/exhaustive-esp
+    updates current runtime version log banners to v14
+  run_test.sh
+    adds wrapper/count/check commands for the two new modes
+  src/test_catalog.c
+    current-version comment label only; catalog generation logic unchanged
+  configs/custom_combinations.example.conf
+    current-version comment label only
+
+No IKE/CHILD/XFRM/UDP/capture data-path redesign was made.
+
+## 4. Mode counts
+
+Direct --count-only results:
+
+  baseline        = 54
+  cross           = 600
+  exhaustive-ike  = 18,172
+  exhaustive-esp  = 4,876
+  exhaustive      = 88,606,672
+  custom direct   = 1
+  custom matrix   = 2
+
+Current fixed counterpart values:
+
+  exhaustive-ike fixed ESP = aes256-sha256
+  exhaustive-esp fixed IKE = aes256-sha256-prfsha256-modp2048
+
+PC-A and PC-B supplied configs contain identical fixed IKE/ESP proposal values.
+
+Explicit disabled baseline testcase:
+  --mode baseline --case MODE-TUNNEL --count-only
+  result = 1
+
+Result:
+  PASS
+
+## 5. Exhaustive catalog uniqueness
+
+A temporary strict-C11 helper called the existing public catalog functions and emitted every proposal.
+
+Results:
+  IKE generated = 18,172
+  IKE unique    = 18,172
+  ESP generated = 4,876
+  ESP unique    = 4,876
+  ESP PFS cases = 4,664
+
+First/last generated catalog values:
+  IKE first = 3des-md5-prfmd5-modp768
+  IKE last  = chacha20poly1305-prfsha512-curve448
+  ESP first = 3des-md5-noesn
+  ESP last  = chacha20poly1305-curve448-esn, expected CHILD KE CURVE_448
+
+Result:
+  PASS
+
+## 6. New split-mode testcase generation
+
+A temporary strict-C11 verification harness invoked the v14 generated-case getters directly.
+
+Observed:
+
+  exhaustive-ike first:
+    id  = EXH-I-00001
+    IKE = 3des-md5-prfmd5-modp768
+    ESP = aes256-sha256
+
+  exhaustive-ike last:
+    id  = EXH-I-18172
+    IKE = chacha20poly1305-prfsha512-curve448
+    ESP = aes256-sha256
+
+  exhaustive-esp first:
+    id  = EXH-E-0001
+    IKE = aes256-sha256-prfsha256-modp2048
+    ESP = 3des-md5-noesn
+
+  exhaustive-esp last:
+    id  = EXH-E-4876
+    IKE = aes256-sha256-prfsha256-modp2048
+    ESP = chacha20poly1305-curve448-esn
+    separate CHILD exchange = true
+    expected CHILD KE       = CURVE_448
+
+Result:
+  deterministic generation and fixed counterpart behavior: PASS
+
+## 7. Fixed-ESP PFS handling in exhaustive-ike
+
+A temporary configuration changed the fixed ESP to:
+  aes256-sha256-ecp384
+
+Generated exhaustive-ike metadata:
+  separate CHILD exchange = true
+  expected CHILD KE       = ECP_384
+
+This confirms that exhaustive-ike reuses the existing PFS detection/CREATE_CHILD_SA verification path when the configured fixed ESP contains a known KE token.
+
+Result:
+  PASS
+
+## 8. Full-run safety guards
+
+The build container does not provide the user's strongSwan installation. Temporary no-op command shims were placed earlier in PATH only to reach option validation without performing IPsec operations.
+
+Unbounded runs were rejected:
+
+  exhaustive-ike:
+    contains 18172 cases; specify --limit N ... or --allow-full-exhaustive
+
+  exhaustive-esp:
+    contains 4876 cases; specify --limit N ... or --allow-full-exhaustive
+
+  exhaustive:
+    contains 88606672 cases; specify --limit N ... or --allow-full-exhaustive
+
+Exit status:
+  non-zero for all three, as required
+
+No full exhaustive execution was attempted.
+
+Result:
+  PASS
+
+## 9. Range guard
+
+With command-presence shims and a finite limit:
+
+  exhaustive-ike --start 18173 --limit 1
+    rejected as out of range
+
+  exhaustive-esp --start 4877 --limit 1
+    rejected as out of range
+
+Result:
+  PASS
+
+## 10. Check-only static configuration paths
+
+With temporary no-op command-presence shims:
+
+  cross:
+    verified_ike=30 verified_esp=20 cases=600
+
+  exhaustive-ike:
+    fixed_esp=aes256-sha256 ike=18172 cases=18172
+
+  exhaustive-esp:
+    fixed_ike=aes256-sha256-prfsha256-modp2048 esp=4876 cases=4876
+
+  exhaustive:
+    ike=18172 esp=4876 cases=88606672
+
+Result:
+  PASS for static configuration/catalog validation
+
+## 11. run_test.sh
+
+Command:
+  bash -n run_test.sh
+
+Result:
+  PASS
+
+Count wrapper commands with explicit config were also executed for:
+  exhaustive-ike
+  exhaustive-esp
+  exhaustive
+
+All returned the expected counts.
+
+## 12. XFRM safety scan
+
+Runtime source/include/config/wrapper files were scanned for executable global flush commands.
+
+Forbidden operations:
+  ip xfrm state flush
+  ip xfrm policy flush
+
+Result:
+  no executable global XFRM flush command found: PASS
+
+## 13. Reference data
+
+Required strongSwan 5.8.4 / 5.9.13 source and CSV files remain present.
+
+CSV structural validation:
+  01_algorithm_category_summary_5.8.4_vs_5.9.13.csv: 12 rows, 7 columns, PASS
+  02_encryption_algorithms_5.8.4_vs_5.9.13.csv: 16 rows, 6 columns, PASS
+  03_exhaustive_5.8.4_proposal_catalog.csv: 71 rows, 6 columns, PASS
+  04_exhaustive_excluded_loaded_primitives_5.8.4.csv: 6 rows, 3 columns, PASS
+  05_cross_verified_proposals.csv: 51 rows, 6 columns, PASS
+
+Result:
+  PASS
+
+## 14. Real-equipment verification status
+
+Not performed in this build container:
+  PC-A 192.168.1.143 / strongSwan 5.9.13
+  PC-B 192.168.1.144 / strongSwan 5.8.4
+  real exhaustive-ike negotiation/data path
+  real exhaustive-esp negotiation/data path
+  real IKE/CHILD installation
+  UDP request/ACK
+  real XFRM counters/SPI/errors
+  packet capture/plaintext checks
+  PFS CREATE_CHILD_SA runtime verification
+  ESN runtime flag verification
+  lifecycle cleanup on both hosts
+
+Therefore v14 status is:
+  split exhaustive implementation: COMPLETE
+  strict build/static/catalog regression: PASS
+  real PC-A/PC-B v14 split-mode regression: NOT YET PERFORMED
+
+The previously reported v11 54/54 real-equipment PASS remains the baseline runtime regression reference until v14 is executed on the two actual hosts.

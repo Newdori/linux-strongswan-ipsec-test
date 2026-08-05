@@ -1,0 +1,71 @@
+component,keyword,ike,esp,classification,notes
+classic_encryption,3des,yes,yes,legacy,Deprecated but proposal-valid and loaded in 5.8.4
+classic_encryption,cast128,yes,yes,legacy,Deprecated but proposal-valid and loaded in 5.8.4
+classic_encryption,blowfish128,yes,yes,legacy,Deprecated but proposal-valid and loaded in 5.8.4
+classic_encryption,blowfish192,yes,yes,legacy,Deprecated but proposal-valid and loaded in 5.8.4
+classic_encryption,blowfish256,yes,yes,legacy,Deprecated but proposal-valid and loaded in 5.8.4
+classic_encryption,null,yes,yes,legacy,Null encryption; interoperability inventory only
+classic_encryption,aes128,yes,yes,normal,AES-CBC 128
+classic_encryption,aes192,yes,yes,normal,AES-CBC 192
+classic_encryption,aes256,yes,yes,normal,AES-CBC 256
+classic_encryption,camellia128,yes,yes,normal,Camellia-CBC 128
+classic_encryption,camellia192,yes,yes,normal,Camellia-CBC 192
+classic_encryption,camellia256,yes,yes,normal,Camellia-CBC 256
+ike_integrity,md5,yes,no,legacy,HMAC-MD5-96
+ike_integrity,md5_128,yes,no,legacy,HMAC-MD5-128
+ike_integrity,sha1,yes,no,legacy,HMAC-SHA1-96
+ike_integrity,sha1_160,yes,no,legacy,HMAC-SHA1-160
+ike_integrity,aesxcbc,yes,no,normal,AES-XCBC-96
+ike_integrity,aescmac,yes,no,normal,AES-CMAC-96
+ike_integrity,sha256,yes,no,normal,HMAC-SHA2-256-128
+ike_integrity,sha384,yes,no,normal,HMAC-SHA2-384-192
+ike_integrity,sha512,yes,no,normal,HMAC-SHA2-512-256
+esp_integrity,md5,no,yes,legacy,HMAC-MD5-96
+esp_integrity,md5_128,no,yes,legacy,HMAC-MD5-128
+esp_integrity,sha1,no,yes,legacy,HMAC-SHA1-96
+esp_integrity,sha1_160,no,yes,legacy,HMAC-SHA1-160
+esp_integrity,aesxcbc,no,yes,normal,AES-XCBC-96
+esp_integrity,sha256,no,yes,normal,HMAC-SHA2-256-128
+esp_integrity,sha384,no,yes,normal,HMAC-SHA2-384-192
+esp_integrity,sha512,no,yes,normal,HMAC-SHA2-512-256
+prf,prfmd5,yes,no,legacy,MD5 PRF
+prf,prfsha1,yes,no,legacy,SHA1 PRF
+prf,prfaesxcbc,yes,no,normal,AES-XCBC PRF
+prf,prfaescmac,yes,no,normal,AES-CMAC PRF
+prf,prfsha256,yes,no,normal,SHA2-256 PRF
+prf,prfsha384,yes,no,normal,SHA2-384 PRF
+prf,prfsha512,yes,no,normal,SHA2-512 PRF
+aead,aes128gcm8,yes,yes,normal,AES-GCM 128 ICV64
+aead,aes192gcm8,yes,yes,normal,AES-GCM 192 ICV64
+aead,aes256gcm8,yes,yes,normal,AES-GCM 256 ICV64
+aead,aes128gcm12,yes,yes,normal,AES-GCM 128 ICV96
+aead,aes192gcm12,yes,yes,normal,AES-GCM 192 ICV96
+aead,aes256gcm12,yes,yes,normal,AES-GCM 256 ICV96
+aead,aes128gcm16,yes,yes,normal,AES-GCM 128 ICV128
+aead,aes192gcm16,yes,yes,normal,AES-GCM 192 ICV128
+aead,aes256gcm16,yes,yes,normal,AES-GCM 256 ICV128
+aead,chacha20poly1305,yes,yes,normal,ChaCha20-Poly1305
+key_exchange,modp768,yes,yes,legacy,DH group 1
+key_exchange,modp1024,yes,yes,legacy,DH group 2
+key_exchange,modp1536,yes,yes,legacy,DH group 5
+key_exchange,modp2048,yes,yes,normal,DH group 14
+key_exchange,modp3072,yes,yes,normal,DH group 15
+key_exchange,modp4096,yes,yes,normal,DH group 16
+key_exchange,modp6144,yes,yes,normal,DH group 17
+key_exchange,modp8192,yes,yes,normal,DH group 18
+key_exchange,modp1024s160,yes,yes,legacy,DH group 22
+key_exchange,modp2048s224,yes,yes,legacy,DH group 23
+key_exchange,modp2048s256,yes,yes,legacy,DH group 24
+key_exchange,ecp192,yes,yes,legacy,NIST P-192
+key_exchange,ecp224,yes,yes,normal,NIST P-224
+key_exchange,ecp256,yes,yes,normal,NIST P-256
+key_exchange,ecp384,yes,yes,normal,NIST P-384
+key_exchange,ecp521,yes,yes,normal,NIST P-521
+key_exchange,ecp224bp,yes,yes,normal,Brainpool P-224
+key_exchange,ecp256bp,yes,yes,normal,Brainpool P-256
+key_exchange,ecp384bp,yes,yes,normal,Brainpool P-384
+key_exchange,ecp512bp,yes,yes,normal,Brainpool P-512
+key_exchange,curve25519,yes,yes,normal,X25519
+key_exchange,curve448,yes,yes,normal,X448
+esp_sequence,noesn,no,yes,normal,32-bit sequence number mode
+esp_sequence,esn,no,yes,normal,Extended Sequence Number mode

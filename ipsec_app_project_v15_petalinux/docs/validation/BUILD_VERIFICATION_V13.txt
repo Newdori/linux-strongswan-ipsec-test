@@ -1,0 +1,217 @@
+# ipsec_app_project_v13 build and static verification
+
+Date: 2026-07-27
+Base version: ipsec_app_project_v12
+
+Status terminology:
+- IMPLEMENTED / STATIC VERIFIED: verified in the build container without the user's real two-PC strongSwan environment.
+- REAL-EQUIPMENT VERIFIED: requires execution on PC-A/PC-B. This v13 package was not run on those hosts in this verification session.
+
+## 1. Strict C11 build
+
+Command:
+  make clean && make
+
+Flags from Makefile:
+  -O2 -g -std=c11 -Wall -Wextra -Wpedantic -Werror
+
+Result:
+  PASS
+
+All project C translation units compiled and linked without warnings promoted to errors.
+
+## 2. v12 behavior-preservation check
+
+Runtime source/config files not requiring a version label were compared byte-for-byte against the supplied v12 tree.
+
+Result:
+  26 runtime source/config files byte-identical: PASS
+
+The only runtime-side files intentionally changed are:
+  src/main.c
+  src/test_catalog.c
+  configs/custom_combinations.example.conf
+  run_test.sh
+
+After normalizing v13 labels/comments back to v12, those four files are also identical to the supplied v12 versions.
+
+Result:
+  runtime logic preservation: PASS
+
+No IKE/CHILD/XFRM/UDP/capture algorithm or lifecycle logic was intentionally changed for v13.
+
+## 3. Matrix and mode counts
+
+crypto_matrix.conf structural count:
+  total definitions = 59
+  enabled           = 54
+  disabled          = 5
+
+Disabled testcase IDs:
+  MODE-TUNNEL
+  NEG-IKE-NO-MATCH
+  LEGACY-3DES-SHA1
+  LEGACY-CAST128
+  LEGACY-BLOWFISH128
+
+Count-only results:
+  baseline   = 54
+  cross      = 30 verified IKE x 20 verified ESP = 600
+  exhaustive = 18,172 IKE x 4,876 ESP = 88,606,672
+  custom direct pair = 1
+  custom example matrix = 2
+
+Explicit disabled testcase selection:
+  --mode baseline --case MODE-TUNNEL --count-only
+  result = 1
+
+Result:
+  PASS
+
+## 4. Exhaustive generator uniqueness
+
+A temporary strict-C11 verification helper called the public exhaustive catalog functions and emitted every generated proposal.
+
+Results:
+  IKE generated = 18,172
+  IKE unique    = 18,172
+  ESP generated = 4,876
+  ESP unique    = 4,876
+  pairs         = 88,606,672
+
+Result:
+  PASS
+
+## 5. Exhaustive full-run safety guard
+
+The build container does not provide the user's strongSwan installation. To reach the option-validation path without executing strongSwan, a temporary no-op `swanctl` command was placed earlier in PATH only for this guard test.
+
+Command shape:
+  ./ipsec_app --config configs/pc_a_initiator.conf --mode exhaustive
+
+Observed refusal:
+  exhaustive mode contains 88606672 cases; specify --limit N (and optional --start N),
+  or explicitly use --allow-full-exhaustive to run all cases.
+
+Exit status:
+  non-zero, as required
+
+Result:
+  PASS
+
+No `--allow-full-exhaustive` execution was attempted.
+
+## 6. Check-only static configuration paths
+
+Using the same temporary no-op `swanctl` availability shim solely to satisfy command-presence checking:
+
+  baseline:   configuration OK; matrix contains 59 definitions
+  cross:      configuration OK; verified_ike=30 verified_esp=20 cases=600
+  exhaustive: configuration OK; ike=18172 esp=4876 cases=88606672
+
+The container did not have tcpdump, so the existing diagnostic warning was emitted. No packet-capture or real IPsec operation was claimed.
+
+Result:
+  PASS for static configuration/catalog validation
+
+## 7. run_test.sh
+
+Command:
+  bash -n run_test.sh
+
+Result:
+  PASS
+
+The wrapper logic is unchanged from v12 except for its v13 comment label.
+
+## 8. XFRM safety scan
+
+Runtime source/include/config/wrapper files were scanned for executable global flush commands.
+
+Forbidden operations:
+  ip xfrm state flush
+  ip xfrm policy flush
+
+Result:
+  no executable global XFRM flush command found: PASS
+
+Historical documentation may mention these strings only to state that they are forbidden/not used.
+
+## 9. Project organization
+
+Root Markdown files:
+  README.md only
+
+Moved under docs/:
+  docs/changelog/
+  docs/design/
+  docs/validation/
+  docs/guides/
+
+WINDOWS_INSTALL artifact:
+  removed
+
+Result:
+  PASS
+
+## 10. Reference data
+
+Required files retained:
+  reference/strongswan-5.8.4_list_algs.txt
+  reference/strongswan-5.9.13_list_algs.txt
+  reference/01_algorithm_category_summary_5.8.4_vs_5.9.13.csv
+  reference/02_encryption_algorithms_5.8.4_vs_5.9.13.csv
+  reference/03_exhaustive_5.8.4_proposal_catalog.csv
+  reference/04_exhaustive_excluded_loaded_primitives_5.8.4.csv
+  reference/05_cross_verified_proposals.csv
+
+CSV parsing/column consistency:
+  01_algorithm_category_summary_5.8.4_vs_5.9.13.csv: 12 rows, 7 columns, PASS
+  02_encryption_algorithms_5.8.4_vs_5.9.13.csv: 16 rows, 6 columns, PASS
+  03_exhaustive_5.8.4_proposal_catalog.csv: 71 rows, 6 columns, PASS
+  04_exhaustive_excluded_loaded_primitives_5.8.4.csv: 6 rows, 3 columns, PASS
+  05_cross_verified_proposals.csv: 51 rows, 6 columns, PASS
+
+Result:
+  PASS
+
+## 11. Public repository / secret hygiene
+
+`.gitignore` retains/excludes at minimum:
+  ipsec_test.psk
+  *.psk
+  *.key
+  result directories
+  *.pcap / *.pcapng
+  *.log
+  archives
+  environment/credential material
+  additional private-key/keystore directories and extensions
+
+No PSK file is included in the v13 project tree.
+
+The existing strongSwan loader continues to save only the generated non-secret connection configuration into result diagnostics. The temporary credential file containing the PSK is mode 0600 and is unlinked in cleanup, matching v12 behavior.
+
+Result:
+  STATIC VERIFIED
+
+## 12. Real-equipment verification status
+
+Not performed in this build container:
+  PC-A 192.168.1.143 / strongSwan 5.9.13
+  PC-B 192.168.1.144 / strongSwan 5.8.4
+  real IKE SA establishment
+  real CHILD SA installation
+  UDP request/ACK
+  real XFRM counters/SPI/error checks
+  packet capture/plaintext checks
+  PFS CREATE_CHILD_SA on wire/runtime
+  ESN runtime flag verification
+  lifecycle cleanup on the two hosts
+
+Therefore v13 status is:
+  implementation/project reorganization: COMPLETE
+  strict build/static regression: PASS
+  real PC-A/PC-B v13 regression: NOT YET PERFORMED
+
+The previously reported v11 54/54 real-equipment PASS remains the runtime regression reference, and v13 intentionally preserves the supplied v12 runtime implementation.

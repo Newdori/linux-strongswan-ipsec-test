@@ -1,0 +1,6 @@
+list_algs_category,algorithm,reason_not_in_exhaustive_proposal_catalog
+encryption,AES_ECB,Loaded primitive but not used as an IKEv2/ESP proposal encryption keyword in the v12 catalog
+encryption,DES_CBC,Loaded primitive but not included in the documented proposal-addressable v12 catalog
+encryption,DES_ECB,Loaded primitive but not used as an IKEv2/ESP proposal encryption keyword in the v12 catalog
+encryption,RC2_CBC,Loaded primitive but not included in the documented proposal-addressable v12 catalog
+dh,MODP_CUSTOM,Requires custom group parameters and cannot be enumerated as a fixed standalone proposal keyword
